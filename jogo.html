@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo do Tigrinho</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #2c2c2c); /* gradiente carbono */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #ffffff; /* texto claro para contraste */
+    }
+
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #1a1a1a;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #1a1a1a 0px,
+    #1a1a1a 2px,
+    #2a2a2a 2px,
+    #2a2a2a 4px
+  );
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  color: #e0e0e0;
+}
+
+
+    .container {
+      padding: 30px;
+    }
+
+    h1 {
+  font-size: 2.5em;
+  color: #ffffff;
+}
+
+
+    .balance {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+
+    .bet-input {
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 1em;
+      width: 150px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .multiplier-box {
+      position: relative;
+      margin: 0 auto 20px auto;
+      width: 120px;
+      height: 60px;
+      background-color: #ff0066;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: riseUp 1.2s ease-out forwards;
+    }
+
+    .multiplier-box span {
+      font-size: 2em;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    @keyframes riseUp {
+      0% {
+        transform: translateY(30px) scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: translateY(0px) scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10px) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .slot-machine {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      margin: 30px auto;
+      width: 270px;
+      height: 240px;
+      background-color: #fff;
+      border: 3px solid #000;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .column {
+      width: 90px;
+      height: 100%;
+      border-left: 1px solid #000;
+      border-right: 1px solid #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .symbol {
+      width: 100%;
+      height: 80px;
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #ff0066;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      transition: transform 0.3s ease;
+    }
+
+    .highlight {
+      background-color: #ccf2ff !important;
+    }
+
+    .parallax {
+      transform: translateY(0);
+      animation: parallaxScroll 0.6s ease-out forwards;
+    }
+
+    @keyframes parallaxScroll {
+      0% {
+        transform: translateY(-100px) scale(1.1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translateY(0px) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .spin-btn {
+      background-color: #00ff99;
+      color: #000;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .spin-btn:hover {
+      background-color: #00cc77;
+      transform: scale(1.05);
+    }
+
+    .spin-btn:active {
+      transform: scale(0.95);
+      background-color: #009966;
+    }
+
+    .result-message {
+      font-size: 1.2em;
+      margin-top: 20px;
+      color: #fff6f6;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Jogo do Tigrinho 🚀 </h1>
+
+    <div class="balance">💰 Saldo: R$ <span id="balance">1000</span></div>
+
+    <div class="bet-input">
+      <label for="bet">Valor da aposta: R$</label>
+      <input type="number" id="bet" min="1" value="50" />
+    </div>
+
+    <div id="multiplierBox" class="multiplier-box" style="display: none;">
+      <span id="multiplierValue">1.0x</span>
+    </div>
+
+    <div class="slot-machine" id="slotMachine"></div>
+
+    <button class="spin-btn" onclick="spin()">🎰 Girar</button>
+
+    <div class="result-message" id="resultMessage"></div>
+
+    <footer>
+      <p>© 2025 Jogo do Tigrinho. Boa sorte!</p>
+    </footer>
+  </div>
+
+  <script>
+    const emojis = ["🍒", "🍋", "🍉", "⭐", "💎", "🔔"];
+    const multipliers = {
+      "🍒": 1.5,
+      "🍋": 1.8,
+      "🍉": 2.0,
+      "⭐": 2.5,
+      "💎": 5.0,
+      "🔔": 10.0
+    };
+
+    const weights = {
+      "🍒": 30,
+      "🍋": 25,
+      "🍉": 20,
+      "⭐": 15,
+      "💎": 7,
+      "🔔": 3
+    };
+
+    let balance = 1000;
+    const rows = 3;
+    const cols = 3;
+
+    function getWeightedSymbol() {
+      const total = Object.values(weights).reduce((a, b) => a + b, 0);
+      const rand = Math.random() * total;
+      let sum = 0;
+      for (const symbol of emojis) {
+        sum += weights[symbol];
+        if (rand <= sum) return symbol;
+      }
+      return emojis[0];
+    }
+
+    function initGrid() {
+      const machine = document.getElementById("slotMachine");
+      machine.innerHTML = "";
+      for (let c = 0; c < cols; c++) {
+        const col = document.createElement("div");
+        col.className = "column";
+        col.id = `col-${c}`;
+        for (let r = 0; r < rows; r++) {
+          const cell = document.createElement("div");
+          cell.className = "symbol";
+          cell.id = `cell-${r}-${c}`;
+          cell.textContent = getWeightedSymbol();
+          col.appendChild(cell);
+        }
+        machine.appendChild(col);
+      }
+    }
+
+    initGrid();
+
+    function spin() {
+      const betAmount = parseInt(document.getElementById("bet").value);
+      const resultMessage = document.getElementById("resultMessage");
+
+      if (isNaN(betAmount) || betAmount <= 0) {
+        resultMessage.textContent = "⚠️ Digite um valor válido para apostar.";
+        return;
+      }
+
+      if (betAmount > balance) {
+        resultMessage.textContent = "⚠️ Saldo insuficiente para essa aposta.";
+        return;
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = document.getElementById(`cell-${r}-${c}`);
+          cell.classList.remove("highlight", "parallax");
+        }
+      }
+
+      balance -= betAmount;
+      document.getElementById("balance").textContent = balance;
+
+      let finalGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
+      let isWinningRound = Math.random() < 0.7;
+      let winningType = isWinningRound ? (Math.random() < 0.5 ? "horizontal" : "diagonal") : null;
+      let winningIndex = isWinningRound ? Math.floor(Math.random() * rows) : null;
+           let winningSymbol = isWinningRound ? getWeightedSymbol() : null;
+
+      let finished = 0;
+      for (let c = 0; c < cols; c++) {
+        animateColumn(c, () => {
+          finished++;
+          if (finished === cols) {
+            checkWin(finalGrid, betAmount);
+          }
+        }, finalGrid, {
+          type: winningType,
+          index: winningIndex,
+          symbol: winningSymbol,
+          col: c
+        });
+      }
+    }
+
+    function animateColumn(colIndex, callback, finalGrid, winConfig) {
+      let count = 0;
+      let steps = 20;
+      let delay = 30;
+
+      const interval = setInterval(() => {
+        for (let r = 0; r < rows; r++) {
+          let symbol;
+
+          if (winConfig && winConfig.type === "horizontal" && r === winConfig.index) {
+            symbol = winConfig.symbol;
+          } else if (
+            winConfig &&
+            winConfig.type === "diagonal" &&
+            ((r === colIndex && winConfig.index === 0) || (r + colIndex === 2 && winConfig.index === 1))
+          ) {
+            symbol = winConfig.symbol;
+          } else {
+            const usedSymbols = finalGrid[r].filter(s => s);
+            do {
+              symbol = getWeightedSymbol();
+            } while (usedSymbols.includes(symbol));
+          }
+
+          const cell = document.getElementById(`cell-${r}-${colIndex}`);
+          cell.textContent = symbol;
+          cell.classList.remove("parallax");
+          void cell.offsetWidth;
+          cell.classList.add("parallax");
+
+          if (count === steps) finalGrid[r][colIndex] = symbol;
+        }
+
+        count++;
+        if (count > steps) {
+          clearInterval(interval);
+          callback();
+        }
+      }, delay + count * 1.5);
+    }
+
+    function showMultiplier(finalMultiplier) {
+      const box = document.getElementById("multiplierBox");
+      const value = document.getElementById("multiplierValue");
+
+      box.style.display = "flex";
+      value.textContent = "1.0x";
+
+      let current = 1.0;
+      const step = 0.1;
+      const interval = setInterval(() => {
+        current += step;
+        if (current < finalMultiplier) {
+          value.textContent = `${current.toFixed(1)}x`;
+        } else {
+          value.textContent = `${finalMultiplier.toFixed(1)}x`;
+          clearInterval(interval);
+          setTimeout(() => {
+            box.style.display = "none";
+          }, 1500);
+        }
+      }, 100);
+    }
+
+    function checkWin(grid, betAmount) {
+      const resultMessage = document.getElementById("resultMessage");
+      let won = false;
+
+      // Trincas horizontais
+      for (let r = 0; r < rows; r++) {
+        const s1 = grid[r][0];
+        const s2 = grid[r][1];
+        const s3 = grid[r][2];
+
+        if (s1 === s2 && s2 === s3) {
+          won = true;
+          const prize = betAmount * multipliers[s1];
+          showMultiplier(multipliers[s1]);
+          balance += prize;
+          for (let c = 0; c < cols; c++) {
+            document.getElementById(`cell-${r}-${c}`).classList.add("highlight");
+          }
+          resultMessage.textContent = `🎉 Trinca de ${s1} na linha ${r + 1}! Você ganhou R$${prize.toFixed(2)}!`;
+          document.getElementById("balance").textContent = balance;
+          return;
+        }
+      }
+
+      // Diagonal principal ↘
+      const d1 = grid[0][0];
+      if (d1 === grid[1][1] && d1 === grid[2][2]) {
+        won = true;
+        const prize = betAmount * multipliers[d1];
+        showMultiplier(multipliers[d1]);
+        balance += prize;
+        for (let i = 0; i < rows; i++) {
+          document.getElementById(`cell-${i}-${i}`).classList.add("highlight");
+        }
+        resultMessage.textContent = `🎉 Trinca diagonal de ${d1}! Você ganhou R$${prize.toFixed(2)}!`;
+        document.getElementById("balance").textContent = balance;
+        return;
+      }
+
+      // Diagonal secundária ↙
+      const d2 = grid[0][2];
+      if (d2 === grid[1][1] && d2 === grid[2][0]) {
+        won = true;
+        const prize = betAmount * multipliers[d2];
+        showMultiplier(multipliers[d2]);
+        balance += prize;
+        for (let i = 0; i < rows; i++) {
+          document.getElementById(`cell-${i}-${2 - i}`).classList.add("highlight");
+        }
+        resultMessage.textContent = `🎉 Trinca diagonal de ${d2}! Você ganhou R$${prize.toFixed(2)}!`;
+        document.getElementById("balance").textContent = balance;
+        return;
+      }
+
+      if (!won) {
+        resultMessage.textContent = "😢 Não foi dessa vez...";
+      }
+    }
+  </script>
+</body>
+</html>
